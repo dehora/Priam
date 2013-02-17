@@ -71,7 +71,7 @@ public class BackupServletTest
         final String newToken = null;
         final String keyspaces = null;
 
-        final String oldRegion = "us-east-1";
+        final String oldRegion = "eu-west-1";
         final String oldToken = "1234";
 
         new Expectations() {
@@ -110,7 +110,7 @@ public class BackupServletTest
         final String newToken = null;
         final String keyspaces = null;
 
-        final String oldRegion = "us-east-1";
+        final String oldRegion = "eu-west-1";
         final String oldToken = "1234";
 
         new Expectations() {
@@ -156,7 +156,7 @@ public class BackupServletTest
 //        final String newToken = null;
 //        final String keyspaces = null;
 //
-//        final String oldRegion = "us-east-1";
+//        final String oldRegion = "eu-west-1";
 //        final String oldToken = "1234";
 //        final String appName = "myApp";
 //
@@ -211,7 +211,7 @@ public class BackupServletTest
         final String newToken = "myNewToken";
         final String keyspaces = null;
 
-        final String oldRegion = "us-east-1";
+        final String oldRegion = "eu-west-1";
         final String oldToken = "1234";
 
         new Expectations() {
@@ -251,7 +251,7 @@ public class BackupServletTest
         final String newToken = null;
         final String keyspaces = "keyspace1,keyspace2";
 
-        final String oldRegion = "us-east-1";
+        final String oldRegion = "eu-west-1";
         final String oldToken = "1234";
 
         new Expectations() {
@@ -296,7 +296,7 @@ public class BackupServletTest
         final String newToken = "5678";
         final String keyspaces = null;
 
-        final String oldRegion = "us-east-1";
+        final String oldRegion = "eu-west-1";
         final String oldToken = "1234";
         final String appName = "myApp";
 

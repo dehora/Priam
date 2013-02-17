@@ -95,7 +95,7 @@ public class PriamInstanceResourceTest
         final String instanceID = "i-abc123";
         final String hostname = "dom.com";
         final String ip = "123.123.123.123";
-        final String rack = "us-east-1a";
+        final String rack = "eu-west-1a";
         final String token = "1234567890";
 
         new Expectations() {
