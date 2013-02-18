@@ -201,6 +201,9 @@ public class InstanceIdentity
     {
         populateRacMap();
         List<String> seeds = new LinkedList<String>();
+
+        logger.debug(String.format("getSeeds: Number of AZs in config : "+config.getRacs().size()));
+
         // Handle single zone deployment
         if (config.getRacs().size() == 1)
         {
@@ -222,11 +225,17 @@ public class InstanceIdentity
         }
         for (String loc : locMap.keySet())
         {
-        		PriamInstance instance = Iterables.tryFind(locMap.get(loc), differentHostPredicate).orNull();
+                logger.debug(String.format("getSeeds: Processing loc seed candidate %s",loc));
+                PriamInstance instance = Iterables.tryFind(locMap.get(loc), differentHostPredicate).orNull();
+
         		if (instance != null)
                 {
                     logger.debug(String.format("Adding non-self node seed to return list %s ",instance.getHostName()));
         			seeds.add(instance.getHostName());
+                }
+                else
+                {
+                    logger.debug(String.format("getSeeds: No non-self instances found loc %s",loc));
                 }
         }
         return seeds;
