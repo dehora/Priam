@@ -125,9 +125,11 @@ public class InstanceIdentity
     private void populateRacMap()
     {
         locMap.clear();
+        logger.debug(String.format("populateRacMap cleared now re-building using cluster name (appname): %s", config.getAppName()));
         for (PriamInstance ins : factory.getAllIds(config.getAppName()))
         {
-        		locMap.put(ins.getRac(), ins);
+            logger.debug(String.format("populateRacMap adding: %s ", ins.toString()));
+            locMap.put(ins.getRac(), ins);
         }
     }
 
@@ -202,18 +204,30 @@ public class InstanceIdentity
         // Handle single zone deployment
         if (config.getRacs().size() == 1)
         {
+            logger.debug(String.format("Single zone deployment detected"));
+
             // Return empty list if all nodes are not up
-            if (membership.getRacMembershipSize() != locMap.get(myInstance.getRac()).size())
+            int found = locMap.get(myInstance.getRac()).size();
+            if (membership.getRacMembershipSize() != found)
+            {
+                logger.debug(String.format("All nodes not up, returning empty seed list. ASG defn expected: %s, Found: %s", ""+membership.getRacMembershipSize(), ""+found ));
                 return seeds;
+            }
             // If seed node, return the next node in the list
             if (locMap.get(myInstance.getRac()).size() > 1 && locMap.get(myInstance.getRac()).get(0).getHostName().equals(myInstance.getHostName()))
+            {
+                logger.debug(String.format("Returning self as node seed %s ", locMap.get(myInstance.getRac()).get(1).getHostName()));
                 seeds.add(locMap.get(myInstance.getRac()).get(1).getHostName());
+            }
         }
         for (String loc : locMap.keySet())
         {
         		PriamInstance instance = Iterables.tryFind(locMap.get(loc), differentHostPredicate).orNull();
         		if (instance != null)
+                {
+                    logger.debug(String.format("Adding non-self node seed to return list %s ",instance.getHostName()));
         			seeds.add(instance.getHostName());
+                }
         }
         return seeds;
     }

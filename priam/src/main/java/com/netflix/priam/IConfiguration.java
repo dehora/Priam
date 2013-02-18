@@ -324,4 +324,10 @@ public interface IConfiguration
     public String getCassProcessName();
 
 
+    /**
+     * cassandra.yaml location
+     */
+    public String getCassandraYamlPath();
+
+
 }

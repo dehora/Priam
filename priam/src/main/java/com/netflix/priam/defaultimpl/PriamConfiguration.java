@@ -77,6 +77,7 @@ public class PriamConfiguration implements IConfiguration
     private static final String CONFIG_ENDPOINT_SNITCH = PRIAM_PRE + ".endpoint_snitch";
     private static final String CONFIG_MEMTABLE_TOTAL_SPACE = PRIAM_PRE + ".memtabletotalspace";
     private static final String CONFIG_CASS_PROCESS_NAME = PRIAM_PRE + ".cass.process";
+    private static final String CONFIG_CASS_YAML_SUBPATH = PRIAM_PRE + ".cass.yaml";
 
     // Backup and Restore
     private static final String CONFIG_BACKUP_THREADS = PRIAM_PRE + ".backup.threads";
@@ -115,13 +116,16 @@ public class PriamConfiguration implements IConfiguration
     private static String REGION = System.getenv("EC2_REGION");
     
     // Defaults 
-    private final String DEFAULT_CLUSTER_NAME = "cass_cluster";
-    private final String DEFAULT_DATA_LOCATION = "/var/lib/cassandra/data";
-    private final String DEFAULT_COMMIT_LOG_LOCATION = "/var/lib/cassandra/commitlog";
-    private final String DEFAULT_CACHE_LOCATION = "/var/lib/cassandra/saved_caches";
-    private final String DEFAULT_ENDPOINT_SNITCH = "org.apache.cassandra.locator.Ec2Snitch";
-    private final String DEFAULT_SEED_PROVIDER = "com.netflix.priam.cassandra.extensions.NFSeedProvider";
-    private final String DEFAULT_PARTITIONER = "org.apache.cassandra.dht.RandomPartitioner";
+    protected final String DEFAULT_CLUSTER_NAME = "cass_cluster";
+    protected final String DEFAULT_DATA_LOCATION = "/var/lib/cassandra/data";
+    protected final String DEFAULT_COMMIT_LOG_LOCATION = "/var/lib/cassandra/commitlog";
+    protected final String DEFAULT_CACHE_LOCATION = "/var/lib/cassandra/saved_caches";
+    protected final String DEFAULT_ENDPOINT_SNITCH = "org.apache.cassandra.locator.Ec2Snitch";
+    protected final String DEFAULT_SEED_PROVIDER = "com.netflix.priam.cassandra.extensions.NFSeedProvider";
+    protected final String DEFAULT_PARTITIONER = "org.apache.cassandra.dht.RandomPartitioner";
+    protected final String DEFAULT_CASS_YAML_SUBPATH = "config/cassandra.yaml";
+
+
 
     // rpm based. Can be modified for tar based.
     private final String DEFAULT_CASS_HOME_DIR = "/etc/cassandra";
@@ -183,12 +187,18 @@ public class PriamConfiguration implements IConfiguration
     {
         // Search in java opt properties
         REGION = StringUtils.isBlank(REGION) ? System.getProperty("EC2_REGION") : REGION;
+        logger.debug("REGION taken from environment: "+REGION);
         // Infer from zone
-        if (StringUtils.isBlank(REGION))
+        if (StringUtils.isBlank(REGION))        {
             REGION = RAC.substring(0, RAC.length() - 1);
+            logger.debug("REGION taken from RAC: "+REGION + ", "+RAC);
+        }
         ASG_NAME = StringUtils.isBlank(ASG_NAME) ? System.getProperty("ASG_NAME") : ASG_NAME;
-        if (StringUtils.isBlank(ASG_NAME))
+        logger.debug("ASG_NAME taken from environment: "+ASG_NAME);
+        if (StringUtils.isBlank(ASG_NAME))         {
             ASG_NAME = populateASGName(REGION, INSTANCE_ID);
+            logger.debug("ASG_NAME taken from REGION/INSTANCE_ID (aws:autoscaling:groupName): "+ASG_NAME + ", "+ REGION+", "+INSTANCE_ID);
+        }
         logger.info(String.format("REGION set to %s, ASG Name set to %s", REGION, ASG_NAME));
     }
 
@@ -232,12 +242,12 @@ public class PriamConfiguration implements IConfiguration
                 break;
         }
         DEFAULT_AVAILABILITY_ZONES =  StringUtils.join(zone, ",");
+        logger.info(String.format("DEFAULT_AVAILABILITY_ZONES set to %s", DEFAULT_AVAILABILITY_ZONES));
     }
 
 
     private void populateProps()
     {
-        // End point is us-east-1
         AmazonSimpleDBClient simpleDBClient = new AmazonSimpleDBClient(provider.getCredentials());
         config = new PriamProperties();
         config.put(CONFIG_ASG_NAME, ASG_NAME);
@@ -276,12 +286,17 @@ public class PriamConfiguration implements IConfiguration
                 dc = att.getValue();
         }
         // Ignore, if not this region
-        if (StringUtils.isNotBlank(dc) && !dc.equals(REGION))
+        if (StringUtils.isNotBlank(dc) && !dc.equals(REGION)) {
+            logger.debug(String.format("Ignoring property [%s:%s], wrong region %s:%s", prop,value, dc,REGION ));
             return;
+        }
         // Override only if region is specified
-        if (config.contains(prop) && StringUtils.isBlank(dc))
+        if (config.contains(prop) && StringUtils.isBlank(dc))    {
+            logger.debug(String.format("Ignoring override, no region set for %s", prop ));
             return;
+        }
         config.put(prop, value);
+        logger.info(String.format("Added property %s:%s", prop, value));
     }
 
     @Override
@@ -655,7 +670,13 @@ public class PriamConfiguration implements IConfiguration
     {
         return config.getProperty(CONFIG_ROWCACHE_COUNT, null);
     }
-    
+
+    @Override
+    public String getCassandraYamlPath()
+    {
+        return getCassHome() +"/" + config.getProperty(CONFIG_CASS_YAML_SUBPATH, DEFAULT_CASS_YAML_SUBPATH);
+    }
+
     private List<String> getTrimmedStringList(String[] strings) {
     		List<String> list = Lists.newArrayList();
     		for(String s : strings) {

@@ -37,6 +37,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.netflix.priam.ICredential;
 import com.netflix.priam.identity.PriamInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DAO for handling Instance identity information such as token, zone, region
@@ -44,6 +46,8 @@ import com.netflix.priam.identity.PriamInstance;
 @Singleton
 public class SDBInstanceData
 {
+    private static final Logger logger = LoggerFactory.getLogger(SDBInstanceData.class);
+
     public static class Attributes
     {
         public final static String APP_ID = "appId";
@@ -98,14 +102,18 @@ public class SDBInstanceData
         String nextToken = null;
         do
         {
-            SelectRequest request = new SelectRequest(String.format(ALL_QUERY, app));
+            String query = String.format(ALL_QUERY, app);
+            logger.debug(String.format("Querying for instances for app %s [%s] ", app, query));
+            SelectRequest request = new SelectRequest(query);
             request.setNextToken(nextToken);
             SelectResult result = simpleDBClient.select(request);
             nextToken = result.getNextToken();
             Iterator<Item> itemiter = result.getItems().iterator();
             while (itemiter.hasNext())
             {
-                inslist.add(transform(itemiter.next()));
+                PriamInstance instance = transform(itemiter.next());
+                logger.debug(String.format("Adding instance to results for app %s [%s] : ", app, instance.toString()));
+                inslist.add(instance);
             }
 
         } while (nextToken != null);

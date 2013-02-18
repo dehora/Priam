@@ -400,4 +400,9 @@ public class FakeConfiguration implements IConfiguration
 	public String getCassProcessName() {
 		return "CassandraDaemon";
 	}
+
+    @Override
+    public String getCassandraYamlPath() {
+       return getCassHome() + "/conf/cassandra.yaml";
+    }
 }
