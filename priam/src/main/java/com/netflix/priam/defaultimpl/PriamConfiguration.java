@@ -123,7 +123,7 @@ public class PriamConfiguration implements IConfiguration
     protected final String DEFAULT_ENDPOINT_SNITCH = "org.apache.cassandra.locator.Ec2Snitch";
     protected final String DEFAULT_SEED_PROVIDER = "com.netflix.priam.cassandra.extensions.NFSeedProvider";
     protected final String DEFAULT_PARTITIONER = "org.apache.cassandra.dht.RandomPartitioner";
-    protected final String DEFAULT_CASS_YAML_SUBPATH = "config/cassandra.yaml";
+    protected final String DEFAULT_CASS_YAML_SUBPATH = "conf/cassandra.yaml";
 
 
 
