@@ -65,6 +65,9 @@ public class IncrementalBackup extends AbstractBackup
         {
             if (keyspaceDir.isFile())
         			continue;
+
+            logger.debug("Scanning for backup in Keyspace dir: {}", keyspaceDir.getAbsolutePath());
+
             for (File columnFamilyDir : keyspaceDir.listFiles())
             {
                 File backupDir = new File(columnFamilyDir, "backups");
