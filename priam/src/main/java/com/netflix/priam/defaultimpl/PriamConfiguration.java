@@ -77,6 +77,9 @@ public class PriamConfiguration implements IConfiguration
     private static final String CONFIG_ENDPOINT_SNITCH = PRIAM_PRE + ".endpoint_snitch";
     private static final String CONFIG_MEMTABLE_TOTAL_SPACE = PRIAM_PRE + ".memtabletotalspace";
     private static final String CONFIG_CASS_PROCESS_NAME = PRIAM_PRE + ".cass.process";
+    private static final String CONFIG_YAML_LOCATION = PRIAM_PRE + ".yamlLocation";
+    private static final String CONFIG_AUTHENTICATOR = PRIAM_PRE + ".authenticator";
+    private static final String CONFIG_AUTHORIZER = PRIAM_PRE + ".authorizer";
     private static final String CONFIG_CASS_YAML_SUBPATH = PRIAM_PRE + ".cass.yaml";
 
     // Backup and Restore
@@ -116,15 +119,16 @@ public class PriamConfiguration implements IConfiguration
     private static String REGION = System.getenv("EC2_REGION");
     
     // Defaults 
-    protected final String DEFAULT_CLUSTER_NAME = "cass_cluster";
-    protected final String DEFAULT_DATA_LOCATION = "/var/lib/cassandra/data";
-    protected final String DEFAULT_COMMIT_LOG_LOCATION = "/var/lib/cassandra/commitlog";
-    protected final String DEFAULT_CACHE_LOCATION = "/var/lib/cassandra/saved_caches";
-    protected final String DEFAULT_ENDPOINT_SNITCH = "org.apache.cassandra.locator.Ec2Snitch";
-    protected final String DEFAULT_SEED_PROVIDER = "com.netflix.priam.cassandra.extensions.NFSeedProvider";
-    protected final String DEFAULT_PARTITIONER = "org.apache.cassandra.dht.RandomPartitioner";
+    private final String DEFAULT_CLUSTER_NAME = "cass_cluster";
+    private final String DEFAULT_DATA_LOCATION = "/var/lib/cassandra/data";
+    private final String DEFAULT_COMMIT_LOG_LOCATION = "/var/lib/cassandra/commitlog";
+    private final String DEFAULT_CACHE_LOCATION = "/var/lib/cassandra/saved_caches";
+    private final String DEFAULT_ENDPOINT_SNITCH = "org.apache.cassandra.locator.Ec2Snitch";
+    private final String DEFAULT_SEED_PROVIDER = "com.netflix.priam.cassandra.extensions.NFSeedProvider";
+    private final String DEFAULT_PARTITIONER = "org.apache.cassandra.dht.RandomPartitioner";
+    public static final String DEFAULT_AUTHENTICATOR = "org.apache.cassandra.auth.AllowAllAuthenticator";
+    public static final String DEFAULT_AUTHORIZER = "org.apache.cassandra.auth.AllowAllAuthority";
     protected final String DEFAULT_CASS_YAML_SUBPATH = "conf/cassandra.yaml";
-
 
 
     // rpm based. Can be modified for tar based.
@@ -671,12 +675,6 @@ public class PriamConfiguration implements IConfiguration
         return config.getProperty(CONFIG_ROWCACHE_COUNT, null);
     }
 
-    @Override
-    public String getCassandraYamlPath()
-    {
-        return getCassHome() +"/" + config.getProperty(CONFIG_CASS_YAML_SUBPATH, DEFAULT_CASS_YAML_SUBPATH);
-    }
-
     private List<String> getTrimmedStringList(String[] strings) {
     		List<String> list = Lists.newArrayList();
     		for(String s : strings) {
@@ -689,4 +687,25 @@ public class PriamConfiguration implements IConfiguration
 	public String getCassProcessName() {
         return config.getProperty(CONFIG_CASS_PROCESS_NAME, DEFAULT_CASS_PROCESS_NAME);
 	}
+
+    public String getYamlLocation()
+    {
+        return config.getProperty(CONFIG_YAML_LOCATION, getCassHome() + "/conf/cassandra.yaml");
+    }
+
+    public String getAuthenticator()
+    {
+        return config.getProperty(CONFIG_AUTHENTICATOR, DEFAULT_AUTHENTICATOR);
+    }
+
+    public String getAuthorizer()
+    {
+        return config.getProperty(CONFIG_AUTHORIZER, DEFAULT_AUTHORIZER);
+    }
+
+    @Override
+    public String getCassandraYamlPath()
+    {
+        return getCassHome() +"/" + config.getProperty(CONFIG_CASS_YAML_SUBPATH, DEFAULT_CASS_YAML_SUBPATH);
+    }
 }

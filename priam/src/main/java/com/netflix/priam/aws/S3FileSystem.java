@@ -33,7 +33,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration;
@@ -79,6 +78,8 @@ public class S3FileSystem implements IBackupFileSystem, S3FileSystemMBean
     private AtomicInteger uploadCount = new AtomicInteger();
     private AtomicInteger downloadCount = new AtomicInteger();
 
+    private final AmazonS3Client s3Client;
+
     @Inject
     public S3FileSystem(Provider<AbstractBackupPath> pathProvider, ICompression compress, final IConfiguration config, ICredential cred)
     {
@@ -111,6 +112,29 @@ public class S3FileSystem implements IBackupFileSystem, S3FileSystemMBean
         {
             throw new RuntimeException(e);
         }
+
+        s3Client = new AmazonS3Client(cred.getAwsCredentialProvider());
+        s3Client.setEndpoint(getS3Endpoint());
+    }
+
+    /*
+     * S3 End point information
+     * http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+     */
+    private String getS3Endpoint()
+    {
+        final String curRegion = config.getDC();
+        if("us-east-1".equalsIgnoreCase(curRegion))
+            return "s3.amazonaws.com";
+        if("eu-west-1".equalsIgnoreCase(curRegion))
+            return "s3-eu-west-1.amazonaws.com";
+        if("us-west-1".equalsIgnoreCase(curRegion))
+            return "s3-us-west-1.amazonaws.com";
+        if("us-west-2".equalsIgnoreCase(curRegion))
+            return "s3-us-west-2.amazonaws.com";
+        if("sa-east-1".equalsIgnoreCase(curRegion))
+            return "s3-sa-east-1.amazonaws.com";
+        throw new IllegalStateException("Unsupported region for this application: " + curRegion);
     }
 
     @Override
@@ -265,7 +289,7 @@ public class S3FileSystem implements IBackupFileSystem, S3FileSystemMBean
 
     private AmazonS3 getS3Client()
     {
-        return new AmazonS3Client(cred.getAwsCredentialProvider());
+        return s3Client;
     }
 
     /**
